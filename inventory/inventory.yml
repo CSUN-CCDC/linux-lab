@@ -87,6 +87,6 @@ all:
           3834323265303235310a343363643138623833303161316263313061363962363862306162393938
           31313831336164636139393434363131303837376562353463393763643332643735
   vars: # Alternatively, you can declare them in the "vars" block, which applies to all hosts
-    # ansible_ssh_user:
+    # ansible_ssh_user:!
     # ansible_ssh_pass:
     # ansible_become: pass
