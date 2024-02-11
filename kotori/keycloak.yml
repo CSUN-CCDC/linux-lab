@@ -2,18 +2,20 @@
 - name: Deploy keycloak to kotori
   hosts: kotori
   become: true
+  vars:
+    keycloak_version: "23.0"
   tasks:
     - name: Download docker
       ansible.builtin.apt:
         name: "{{ item }}"
         state: present
-      loop: [docker.io, docker-compose, mariadb-server, mariadb-client]
-    - name: Configure msyql database for keycloak
-      community.mysql.mysql_db:
-        login_user: "root"
-        login_password: "Password123!"
-        name: keycloak
-        state: present
+      loop: [docker.io, docker-compose, mariadb-server, mariadb-client, python3-pymysql]
+    # - name: Configure msyql database for keycloak
+    #   community.mysql.mysql_db:
+    #     login_user: "root"
+    #     login_password: "Password123!"
+    #     name: keycloak
+    #     state: present
     - name: Get keycloak example realm
       ansible.builtin.git:
         repo: https://github.com/strimzi/strimzi-kafka-oauth
@@ -35,14 +37,16 @@
         #   - "8443:8443"
         command: "start-dev --import-realm"
         env:
-          KC_DB: "mysql"
+          KC_DB: "dev-file"
+          # KC_DB: "mysql"
           # KC_DB_URL: "jdbc:mysql://localhost/keycloak_db"
-          KC_DB_USERNAME: "root"
-          KC_DB_PASSWORD: "Password123!"
+          # KC_DB_USERNAME: "root"
+          # KC_DB_PASSWORD: "Password123!"
           KEYCLOAK_ADMIN: "admin"
           KEYCLOAK_ADMIN_PASSWORD: "admin"
-          KC_HOSTNAME: "keycloak.animeverse.life"
-          KC_HOSTNAME_PORT: "8080"
+          #KC_HOSTNAME: "keycloak.animeverse.life"
+          KC_HOSTNAME_URL: "http://keycloak.animeverse.life:80" 
+          #KC_HOSTNAME_PORT: "8080"
           KC_HOSTNAME_STRICT: "false"
           KC_HOSTNAME_STRICT_HTTPS: "false"
           KC_HTTP_ENABLED: "true"

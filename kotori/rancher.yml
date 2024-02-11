@@ -1,0 +1,35 @@
+- name: Deploy rancher to kotori
+  hosts: kotori
+  become: true
+  tasks:
+    - name: Download docker
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop: [docker.io, docker-compose, mariadb-server, mariadb-client]
+    - name: Deploy rancher folder
+      ansible.builtin.file:
+        path: "/var/docker-compose/rancher"
+        state: directory
+    - name: Deploy rancher
+      community.docker.docker_container:
+        name: rancher
+        state: absent # pausing rancher for now
+        image: docker.io/rancher/rancher:latest
+        ports:
+          - "444:443"
+        volumes: 
+          # attempting to have persistency
+          - "/var/docker-compose/rancher:/var/lib/rancher"
+          # Generate Openssl certs for use with rancher.
+          #- "/<CERT_DIRECTORY>/<FULL_CHAIN.2.0,pem>:/etc/rancher/ssl/cert.pem"
+          #- "/<CERT_DIRECTORY>/<PRIVATE_KEY.pem>:/etc/rancher/ssl/key.pem"
+          #- "/<CERT_DIRECTORY>/<CA_CERTS.pem>:/etc/rancher/ssl/cacerts.pem"
+        privileged: true
+        env:
+          CATTLE_BOOTSTRAP_PASSWORD: password
+        restart_policy: "unless-stopped"
+      # rancher-db:
+      #   image: mariadb
+      #   environment:
+      #     MARIADB_ROOT_PASSWORD: example

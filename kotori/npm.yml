@@ -1,0 +1,26 @@
+- name: Deploy nginx proxy manager to kotori
+  hosts: kotori
+  become: true
+  tasks:
+    - name: Download docker
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop: [docker.io, docker-compose, mariadb-server, mariadb-client]
+    - name: Create relevant storage directories
+      ansible.builtin.file:
+        path: "/var/docker-compose/npm/{{ item }}"
+        state: directory
+      loop: ['data', 'letsencrypt']
+    - name: Deploy nginx proxy manager container
+      community.docker.docker_container:
+        name: npm
+        image: 'jc21/nginx-proxy-manager:latest'
+        restart_policy: unless-stopped
+        ports:
+          - '80:80'
+          - '81:81'
+          - '443:443'
+        volumes:
+          - /var/docker-compose/npm/data:/data
+          - /var/docker-compose/npm/letsencrypt:/etc/letsencrypt
